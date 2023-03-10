@@ -8,10 +8,10 @@ const {users} = require('../database');
 
 require('dotenv').config();
 var client = mysql.createConnection({
-    host: "localhost",
-    user: "recover3_admin",
-    password: "Med1212809@",
-    database: "recover3_rst"
+    host: "bujozguzzi4xh9p80mru-mysql.services.clever-cloud.com",
+    user: "u34t63025yk8pugp",
+    password: "EkY9IdkbqfVcMrZwqgNv",
+    database: "bujozguzzi4xh9p80mru"
   });
 
 

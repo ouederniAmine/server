@@ -7,11 +7,12 @@
     const {users} = require('../database');
     require('dotenv').config();
     var client = mysql.createConnection({
-        host: "localhost",
+        host: "containers-us-west-123.railway.app",
         user: "root",
-        password: "Med1212809@",
-        database: "rst"
+        password: "I4fqfBwd4tApAQASMuHD",
+        database: "railway"
       });
+    
   
     router.post('/signup', [
         check('email', 'Invalid email').isEmail(),
