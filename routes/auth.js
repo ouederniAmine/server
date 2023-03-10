@@ -7,12 +7,12 @@
     const {users} = require('../database');
     require('dotenv').config();
     var client = mysql.createConnection({
-        host: "containers-us-west-123.railway.app",
-        user: "root",
-        password: "I4fqfBwd4tApAQASMuHD",
-        database: "railway"
+        host: "bujozguzzi4xh9p80mru-mysql.services.clever-cloud.com",
+        user: "u34t63025yk8pugp",
+        password: "EkY9IdkbqfVcMrZwqgNv",
+        database: "bujozguzzi4xh9p80mru"
       });
-    
+
   
     router.post('/signup', [
         check('email', 'Invalid email').isEmail(),
@@ -41,7 +41,7 @@
                     // create jwt token
                     const token = jwt.sign(
                         {email},
-                        process.env.JWT_SECRET,
+                        "Med1212809@",
                         {expiresIn: '1h'}
                     );
                     console.log(token);
@@ -102,7 +102,7 @@
                 }
                 const token = jwt.sign(
                     {email},
-                    process.env.JWT_SECRET,
+                   "Med1212809@",
                     {expiresIn: '1h'}
                 );
                 res.json({token ,  userid});
@@ -111,7 +111,9 @@
                 query,
                 (err, result) => {
                     console.log(result);
+                    console.log(err);
                  candidate = result[0];
+                 
                  if (!candidate) {
                     return res.status(400).json({message: 'User not found'});
                 }else{
