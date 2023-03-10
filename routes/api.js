@@ -9,9 +9,9 @@ const {users} = require('../database');
 require('dotenv').config();
 var client = mysql.createConnection({
     host: "localhost",
-    user: "root",
+    user: "recover3_admin",
     password: "Med1212809@",
-    database: "rst"
+    database: "recover3_rst"
   });
 
 
