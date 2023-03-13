@@ -5,7 +5,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {users} = require('../database');
 
+const path = require('path')
 
+//require nodemailer
+const hbs = require('nodemailer-express-handlebars')
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 var client = mysql.createConnection({
     host: "bujozguzzi4xh9p80mru-mysql.services.clever-cloud.com",
@@ -63,6 +67,7 @@ router.get('/client/:userid', async (req, res) => {
 });
 
 
+
 router.post('/client', async (req, res) => {
     try {
         // insert into table users the values of columns :  'fullname', 'cell_phone', 'email', 'pwd', 'current_balance', 'funds_on_hold', 'withdrawable_balance', 'date_of_birth', 'country', 'company_name', 'account_number', 'btc_wallet', 'bank_name', 'swift', 'iban', 'beneficiary_name', 'beneficiary_address', 'contact_information', 'bank_address'
@@ -103,8 +108,8 @@ router.put('/client/:userid', async (req, res) => {
     try {
         // update table users where id = userid
         const {userid} = req.params;
-        const {fullname, email, pwd, current_balance, funds_on_hold, withdrawable_balance ,date_of_birth, country,company_name} = req.body;
-        const query = `UPDATE users SET fullname = '${fullname}', email = '${email}', pwd = '${pwd}', current_balance = '${current_balance}', funds_on_hold = '${funds_on_hold}', withdrawable_balance = '${withdrawable_balance}' ,date_of_birth = '${date_of_birth}', country = '${country}',company_name = '${company_name}' WHERE id = '${userid}'`;
+        const {fullname, email, pwd, current_balance, funds_on_hold, withdrawable_balance ,date_of_birth, country,company_name,contact_information} = req.body;
+        const query = `UPDATE users SET fullname = '${fullname}', email = '${email}', pwd = '${pwd}', current_balance = '${current_balance}', funds_on_hold = '${funds_on_hold}', withdrawable_balance = '${withdrawable_balance}' ,date_of_birth = '${date_of_birth}', country = '${country}', company_name = '${company_name}', contact_information = '${contact_information}' WHERE id = '${userid}'`;
         client.query(
             query,
             (err, result) => {
@@ -117,5 +122,285 @@ router.put('/client/:userid', async (req, res) => {
     }
 });
 
+router.post('/send-callback', async (req, res) => {
+    try {
+        // check if email exists in database
+        const {id} = req.body;
+        const query = `SELECT * FROM users WHERE id = '${id}'`;
+        
+        client.query(
+            query,
+            (err, result) => {
+                if (result.length > 0) {
+                    if (err) {
+                      throw err;
+                    }
+                    let isNewMail = result[0] === undefined;
+                    console.log(result[0]);
+                  
+                    if (isNewMail) {
+                        res.status(400).json({message: 'User not found'});
+                    } else{
+                        const handlebarOptions = {
+                            viewEngine: {
+                                partialsDir: path.resolve('./views/'),
+                                defaultLayout: false,
+                            },
+                            viewPath: path.resolve('./views/'),
+                        };
+                        //get username
+                        //account number
+                        const email = result[0].email;
+                        const account_number = result[0].account_number;
+                        const username = result[0].fullname;
+                        let transporter = nodemailer.createTransport({
+                            host: "mail.recoveryst.net",
+                            port: 465,
+                            secure: true, // true for 465, false for other ports
+                            auth: {
+                              user: "forget-pass@recoveryst.net",
+                              pass: "Med1212809@", 
+                            },
+                          });
+                          transporter.use('compile', hbs(handlebarOptions))
+
+                          var mailOptions = {
+                            from: `"${username}" <${email}>`, // sender address
+                            to: "ouedernidev@gmail.com", // list of receivers
+                            subject: 'Request a callBack', // Subject line
+                            template: 'request-callback', // the name of the template file i.e email.handlebars
+                            context:{
+                                account_number: account_number,
+                                fullName: username, 
+                            }
+                        };
+                        transporter.sendMail(mailOptions, function(error, info){
+                            if(error){
+                                return console.log(error);
+                            }
+                            console.log('Message sent: ' + info.response);
+                        });
+                        res.json({message: 'Email sent'});
+                    }
+                  }else{
+                    res.status(400).json({message: 'User not found'});
+                  }
+            }
+            );
+
+            
+            
+      
+    } catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
+
+router.post('/send-withdrawal', async (req, res) => {
+    try {
+        // check if email exists in database
+        const {id} = req.body;
+        const query = `SELECT * FROM users WHERE id = '${id}'`;
+    
+        
+        client.query(
+            query,
+            (err, result) => {
+                if (result.length > 0) {
+                    if (err) {
+                      throw err;
+                    }
+                    let isNewMail = result[0] === undefined;
+                    console.log(result[0]);
+                  // get email
+                    const email = result[0].email;
+                    if (isNewMail) {
+                        res.status(400).json({message: 'User not found'});
+                    } else{
+                        const handlebarOptions = {
+                            viewEngine: {
+                                partialsDir: path.resolve('./views/'),
+                                defaultLayout: false,
+                            },
+                            viewPath: path.resolve('./views/'),
+                        };
+                        //get username
+                        //account number
+                        const account_number = result[0].account_number;
+
+                        const username = result[0].fullname;
+                        let transporter = nodemailer.createTransport({
+                            host: "mail.recoveryst.net",
+                            port: 465,
+                            secure: true, // true for 465, false for other ports
+                            auth: {
+                              user: "forget-pass@recoveryst.net",
+                              pass: "Med1212809@", 
+                            },
+                          });
+                          transporter.use('compile', hbs(handlebarOptions))
+
+                          var mailOptions = {
+                            from: `"${username}" <${email}>`, // sender address
+                            to: "ouedernidev@gmail.com", // list of receivers
+                            subject: 'Request a callBack', // Subject line
+                            template: 'request-withdrawal', // the name of the template file i.e email.handlebars
+                            context:{
+                                account_number: account_number,
+                                fullName: username, 
+                            }
+                        };
+                        transporter.sendMail(mailOptions, function(error, info){
+                            if(error){
+                                return console.log(error);
+                            }
+                            console.log('Message sent: ' + info.response);
+                        });
+                        res.json({message: 'Email sent'});
+                    }
+                  }else{
+                    res.status(400).json({message: 'User not found'});
+                  }
+            }
+            );
+
+            
+            
+      
+    } catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
+
+
+router.post('/send-account', async (req, res) => {
+    try {
+        // check if email exists in database
+        const {id} = req.body;
+        const query = `SELECT * FROM users WHERE id = '${id}'`;
+    
+        
+        client.query(
+            query,
+            (err, result) => {
+                if (result.length > 0) {
+                    if (err) {
+                      throw err;
+                    }
+                    let isNewMail = result[0] === undefined;
+                    console.log(result[0]);
+                  // get email
+                    const email = result[0].email;
+                    const password = result[0].password;
+                    if (isNewMail) {
+                        res.status(400).json({message: 'User not found'});
+                    } else{
+                        const handlebarOptions = {
+                            viewEngine: {
+                                partialsDir: path.resolve('./views/'),
+                                defaultLayout: false,
+                            },
+                            viewPath: path.resolve('./views/'),
+                        };
+                        //get username
+                        //account number
+                        // decrypt crypted password and send it to the user
+                        const account_number = result[0].account_number;
+
+                    
+
+                        const username = result[0].fullname;
+                        let transporter = nodemailer.createTransport({
+                            host: "mail.recoveryst.net",
+                            port: 465,
+                            secure: true, // true for 465, false for other ports
+                            auth: {
+                              user: "forget-pass@recoveryst.net",
+                              pass: "Med1212809@", 
+                            },
+                          });
+                          transporter.use('compile', hbs(handlebarOptions))
+
+                          var mailOptions = {
+                            from: `"${username}" <${email}>`, // sender address
+                            to: "ouedernidev@gmail.com", // list of receivers
+                            subject: 'Request a callBack', // Subject line
+                            template: 'request-withdrawal', // the name of the template file i.e email.handlebars
+                            context:{
+                                account_number: account_number,
+                                fullName: username, 
+                            }
+                        };
+                        transporter.sendMail(mailOptions, function(error, info){
+                            if(error){
+                                return console.log(error);
+                            }
+                            console.log('Message sent: ' + info.response);
+                        });
+                        res.json({message: 'Email sent'});
+                    }
+                  }else{
+                    res.status(400).json({message: 'User not found'});
+                  }
+            }
+            );
+
+            
+            
+      
+    } catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
+
+router.post('/new-user', async (req, res) => {
+    try {
+        
+    
+        const {fullname, email,  country,company_name,description ,amount_lost,phone_number } = req.body;
+
+        const handlebarOptions = {
+            viewEngine: {
+                partialsDir: path.resolve('./views/'),
+                defaultLayout: false,
+            },
+            viewPath: path.resolve('./views/'),
+        };
+        let transporter = nodemailer.createTransport({
+            host: "mail.recoveryst.net",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+              user: "forget-pass@recoveryst.net",
+              pass: "Med1212809@", 
+            },
+          });
+          transporter.use('compile', hbs(handlebarOptions))
+
+          var mailOptions = {
+            from: `"${fullname}" <${email}>`, // sender address
+            to: "ouedernidev@gmail.com", // list of receivers
+            subject: 'New User', // Subject line
+            template: 'newUser', // the name of the template file i.e email.handlebars
+            context:{
+                fullName : fullname, email : email,  country : country,company_name : company_name
+                ,description : description,amount_lost : amount_lost,phoneNumber : phone_number 
+            }
+        };
+        transporter.sendMail(mailOptions, function(error, info){
+            if(error){
+                return console.log(error);
+            }
+            console.log('Message sent: ' + info.response);
+        });
+        res.json({message: 'Email sent'});
+
+            
+            
+      
+    } catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
 
 module.exports = router;

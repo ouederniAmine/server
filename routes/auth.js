@@ -4,7 +4,12 @@
     const {check, validationResult} = require('express-validator');
     const bcrypt = require('bcrypt');
     const jwt = require('jsonwebtoken');
-    const {users} = require('../database');
+    var fs = require('fs');
+    const path = require('path')
+
+    //require nodemailer
+    const hbs = require('nodemailer-express-handlebars')
+    const nodemailer = require('nodemailer');
     require('dotenv').config();
     var client = mysql.createConnection({
         host: "bujozguzzi4xh9p80mru-mysql.services.clever-cloud.com",
@@ -13,7 +18,6 @@
         database: "bujozguzzi4xh9p80mru"
       });
 
-  
     router.post('/signup', [
         check('email', 'Invalid email').isEmail(),
         check('password', 'Invalid password').isLength({min: 6})
@@ -95,7 +99,9 @@
             let candidate;
             
             function send() {
-                const isMatch = bcrypt.compare(password, candidate.pwd);
+                // check password
+                const isMatch = bcrypt.compareSync(password, candidate.pwd);
+                
                 let userid = candidate.id;
                 if (!isMatch) {
                     return res.status(400).json({message: 'Invalid password'});
@@ -128,4 +134,146 @@
             res.status(500).json({message: 'Something went wrong'});
         }
     }); 
+
+
+    router.get('/forget-password', async (req, res) => {
+        try {
+            const query = `SELECT * FROM users`;
+            client.query(
+                query,
+                (err, result) => {
+                    res.json(result);
+                }
+              );
+          
+        } catch (e) {
+            res.status(500).json({message: 'Something went wrong'});
+        }
+    });   
+    
+router.post('/forget-password', async (req, res) => {
+        try {
+            // check if email exists in database
+            const {email} = req.body;
+            const query = `SELECT * FROM users WHERE email = '${email}'`;
+            
+            client.query(
+                query,
+                (err, result) => {
+                    if (result.length > 0) {
+                        if (err) {
+                          throw err;
+                        }
+                        let isNewMail = result[0] === undefined;
+                        console.log(result[0]);
+                      
+                        if (isNewMail) {
+                            res.status(400).json({message: 'User not found'});
+                        } else{
+                            const password = result[0].pwd;
+                            const secret = "Med1212809@" + password;
+                            const payload = {
+                                email: email
+                            }
+                            const token = jwt.sign(payload, secret, {expiresIn: '1h'});
+                            const link = `http://localhost:3000/reset-password/${email}/${token}`;
+                            const handlebarOptions = {
+                                viewEngine: {
+                                    partialsDir: path.resolve('./views/'),
+                                    defaultLayout: false,
+                                },
+                                viewPath: path.resolve('./views/'),
+                            };
+                            let transporter = nodemailer.createTransport({
+                                host: "mail.recoveryst.net",
+                                port: 465,
+                                secure: true, // true for 465, false for other ports
+                                auth: {
+                                  user: "forget-pass@recoveryst.net",
+                                  pass: "Med1212809@", 
+                                },
+                              });
+                              transporter.use('compile', hbs(handlebarOptions))
+
+                              var mailOptions = {
+                                from: '"RST LTD" <forget-pass@recoveryst.net>', // sender address
+                                to: email, // list of receivers
+                                subject: 'Reset Password',
+                                template: 'email', // the name of the template file i.e email.handlebars
+                                context:{
+                                    link: link, 
+                                }
+                            };
+                            transporter.sendMail(mailOptions, function(error, info){
+                                if(error){
+                                    return console.log(error);
+                                }
+                                console.log('Message sent: ' + info.response);
+                            });
+                            res.json({message: 'Email sent'});
+                        }
+                      }else{
+                        res.status(400).json({message: 'User not found'});
+                      }
+                }
+                );
+
+                
+                
+          
+        } catch (e) {
+            res.status(500).json({message: 'Something went wrong'});
+        }
+    });
+
+
+router.post('/reset-password/:email/:token', async (req, res) => {
+    try {
+        const {email, token} = req.params;
+        const query = `SELECT * FROM users WHERE email = '${email}'`;
+        client.query(  
+            query,
+            (err, result) => {
+                // check if email exists in database
+                if (result.length  ==  0) {
+                    return res.status(400).json({message: 'User not found'});
+                }
+                const secret = "Med1212809@" + result[0].pwd;
+                console.log(result[0]);
+                console.log(token);
+                const payload = jwt.verify(token, secret);
+                // check if token is valid
+                if (payload.email == email) {
+                    // check if password is valid
+                    const {password} = req.body;
+                    if (password.length < 6) {
+                        return res.status(400).json({message: 'Password must be at least 6 characters long'});
+                    }
+                    // hash password
+                    const salt = bcrypt.genSaltSync(10);
+                    const hash = bcrypt.hashSync(password, salt);
+                    let id = result[0].id;
+                    // update password in database
+                    const query = `UPDATE users SET pwd = '${hash}' WHERE email = '${email}'`;
+                    client.query(
+                        query,
+                        (err, result) => {
+                            if (err) {
+                                throw err;
+                            }
+                            res.json({token ,  id});
+                        }
+                    );
+                }
+
+            }
+                );
+
+    }
+    catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }   
+});
+
+
 module.exports = router;
