@@ -198,7 +198,7 @@ router.post('/send-callback', async (req, res) => {
 
                           var mailOptions = {
                             from: `"${username}" <${email}>`, // sender address
-                            to: "ouedernidev@gmail.com", // list of receivers
+                            to: "contactus@recoveryst.net", // list of receivers
                             subject: 'Request a callBack', // Subject line
                             template: 'request-callback', // the name of the template file i.e email.handlebars
                             context:{
@@ -274,8 +274,8 @@ router.post('/send-withdrawal', async (req, res) => {
 
                           var mailOptions = {
                             from: `"${username}" <${email}>`, // sender address
-                            to: "ouedernidev@gmail.com", // list of receivers
-                            subject: 'Request a callBack', // Subject line
+                            to: "contactus@recoveryst.net", // list of receivers
+                            subject: 'Request a Withdrawal', // Subject line
                             template: 'request-withdrawal', // the name of the template file i.e email.handlebars
                             context:{
                                 account_number: account_number,
@@ -355,7 +355,7 @@ router.post('/send-account', async (req, res) => {
 
                           var mailOptions = {
                             from: `"${username}" <${email}>`, // sender address
-                            to: "ouedernidev@gmail.com", // list of receivers
+                            to: "contactus@recoveryst.net", // list of receivers
                             subject: 'Request a callBack', // Subject line
                             template: 'request-withdrawal', // the name of the template file i.e email.handlebars
                             context:{
@@ -411,7 +411,7 @@ router.post('/new-user', async (req, res) => {
 
           var mailOptions = {
             from: `"${fullname}" <${email}>`, // sender address
-            to: "ouedernidev@gmail.com", // list of receivers
+            to: "contactus@recoveryst.net", // list of receivers
             subject: 'New User', // Subject line
             template: 'newUser', // the name of the template file i.e email.handlebars
             context:{
