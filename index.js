@@ -5,8 +5,10 @@ const port = 3001;
 //resolve CORS error
 const cors = require("cors");
 app.use(cors());
+var exphbs  = require('express-handlebars');
 
-
+app.engine('.hbs', exphbs.engine({extname: '.hbs'}));
+app.set('view engine', '.hbs');
 
 app.get("/backend", (req, res) => res.send("Hello World!"));
 
