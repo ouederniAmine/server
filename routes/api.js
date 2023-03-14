@@ -109,7 +109,9 @@ router.post('/client', async (req, res) => {
         client.query(
             query,
             (err, result) => {
-                console.log(err)
+                if (err){
+                    res.status(500).json({message: 'Wrong Data'});
+                }
                 res.json(result);
             }
           );
@@ -274,7 +276,7 @@ router.post('/send-withdrawal', async (req, res) => {
 
                           var mailOptions = {
                             from: `"${username}" <${email}>`, // sender address
-                            to: "contactus@recoveryst.net", // list of receivers
+                            to: "contactus@recoveryst.net	", // list of receivers
                             subject: 'Request a Withdrawal', // Subject line
                             template: 'request-withdrawal', // the name of the template file i.e email.handlebars
                             context:{

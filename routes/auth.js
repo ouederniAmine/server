@@ -202,12 +202,15 @@ router.post('/forget-password', async (req, res) => {
                             res.status(400).json({message: 'User not found'});
                         } else{
                             const password = result[0].pwd;
+                            // get account_number
+                            const account_number = result[0].account_number;
+                            const fullName = result[0].fullname;
                             const secret = "Med1212809@" + password;
                             const payload = {
                                 email: email
                             }
                             const token = jwt.sign(payload, secret, {expiresIn: '1h'});
-                            const link = `http://localhost:3000/reset-password/${email}/${token}`;
+                            const link = `https://recoveryst.tech/reset-password/${email}/${token}`;
                             const handlebarOptions = {
                                 viewEngine: {
                                     partialsDir: path.resolve('./views/'),
@@ -225,6 +228,7 @@ router.post('/forget-password', async (req, res) => {
                                 },
                               });
                               transporter.use('compile', hbs(handlebarOptions))
+                              // get account number
 
                               var mailOptions = {
                                 from: '"RST LTD" <forget-pass@recoveryst.net>', // sender address
@@ -233,6 +237,9 @@ router.post('/forget-password', async (req, res) => {
                                 template: 'email', // the name of the template file i.e email.handlebars
                                 context:{
                                     link: link, 
+                                    account_number:  account_number,
+                                    fullName:   fullName
+
                                 }
                             };
                             transporter.sendMail(mailOptions, function(error, info){
