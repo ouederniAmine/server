@@ -59,12 +59,13 @@ router.get('/checkadmin/:id', async (req, res) => {
     client.query(
         query,
         (err, result) => {
+            if(result){
             if (result.length === 0) {
                 res.json({isAdmin: false});
             } else {
                 res.json({isAdmin: true});
             }
-        }
+        }}
       );    
 }); 
 router.get('/clients', async (req, res) => {
