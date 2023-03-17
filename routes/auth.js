@@ -312,6 +312,34 @@ router.post('/reset-password/:email/:token', async (req, res) => {
         res.status(500).json({message: 'Something went wrong'});
     }   
 });
+// update password
+router.put('/update-password/:id', async (req, res) => {
+    try {
+        const {id} = req.params;
+        const {password} = req.body;
+        if (password.length < 6) {
+            return res.status(400).json({message: 'Password must be at least 6 characters long'});
+        }
+        // hash password
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(password, salt);
+        // update password in database
+        const query = `UPDATE users SET pwd = '${hash}' WHERE id = '${id}'`;
+        client.query(
+            query,
+            (err, result) => {
+                if (err) {
+                    throw err;
+                }
+                res.json({message: 'Password updated'});
+            }
+        );
+    }
+    catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
+
 
 
 module.exports = router;

@@ -70,7 +70,8 @@ router.get('/checkadmin/:id', async (req, res) => {
 }); 
 router.get('/clients', async (req, res) => {
     try {
-        const query = `SELECT * FROM users`;
+       // get all the users that with id not in admins table
+        const query = `SELECT * FROM users WHERE id NOT IN (SELECT adminid FROM admins)`;
         client.query(
             query,
             (err, result) => {
@@ -84,7 +85,7 @@ router.get('/clients', async (req, res) => {
 });
 router.get('/client/:userid', async (req, res) => {
     try {
-        // select all from table users where id = userid
+        // select all from table users where id = userid and
         const {userid} = req.params;
         const query = `SELECT * FROM users WHERE id = '${userid}'`;
         client.query(
@@ -105,8 +106,13 @@ router.post('/client', async (req, res) => {
     try {
         // insert into table users the values of columns :  'fullname', 'cell_phone', 'email', 'pwd', 'current_balance', 'funds_on_hold', 'withdrawable_balance', 'date_of_birth', 'country', 'company_name', 'account_number', 'btc_wallet', 'bank_name', 'swift', 'iban', 'beneficiary_name', 'beneficiary_address', 'contact_information', 'bank_address'
         const {fullname, email, pwd, current_balance, funds_on_hold, withdrawable_balance ,date_of_birth, country,company_name, account_number, btc_wallet, bank_name, swift, iban, beneficiary_name, beneficiary_address, contact_information, bank_address} = req.body;
-        console.log(req.body)
-        const query = `INSERT INTO users (fullname, email, pwd, current_balance, funds_on_hold, withdrawable_balance ,date_of_birth, country,company_name, account_number, btc_wallet, bank_name, swift, iban, beneficiary_name, beneficiary_address, contact_information, bank_address) VALUES ('${fullname}', '${email}', '${pwd}', '${current_balance}', '${funds_on_hold}', '${withdrawable_balance}' ,'${date_of_birth}', '${country}', '${company_name}', '${account_number}', '${btc_wallet}', '${bank_name}', '${swift}', '${iban}', '${beneficiary_name}', '${beneficiary_address}', '${contact_information}', '${bank_address}')`;
+       const plainPassword = pwd;
+       console.log(plainPassword)
+        const password = await bcrypt.hash(plainPassword, 10);
+        
+        
+
+        const query = `INSERT INTO users (fullname, email, pwd, current_balance, funds_on_hold, withdrawable_balance ,date_of_birth, country,company_name, account_number, btc_wallet, bank_name, swift, iban, beneficiary_name, beneficiary_address, contact_information, bank_address) VALUES ('${fullname}', '${email}', '${password}', '${current_balance}', '${funds_on_hold}', '${withdrawable_balance}' ,'${date_of_birth}', '${country}', '${company_name}', '${account_number}', '${btc_wallet}', '${bank_name}', '${swift}', '${iban}', '${beneficiary_name}', '${beneficiary_address}', '${contact_information}', '${bank_address}')`;
         client.query(
             query,
             (err, result) => {
@@ -437,5 +443,91 @@ router.post('/new-user', async (req, res) => {
         res.status(500).json({message: 'Something went wrong'});
     }
 });
+
+router.post('/add-csv', async (req, res) => {
+    try {
+        let newData = {
+            fullname:"",
+            email:"",
+            current_balance:"",
+            funds_on_hold :"",
+            withdrawable_balance:"",
+            country:"",
+            company_name:"",
+            account_number:0,
+            btc_wallet:"",
+            bank_name:"",
+            swift:"",
+            bank_address:"",
+            iban:"",
+            beneficiary_name:"",
+            beneficiary_address:"",
+            contact_information:"",
+            bank_address:"",
+            currency:""
+        }
+        const data= req.body;
+        // format data , change the keys of every array json element to be like the keys in of the newData object then send this element to the database
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            newData.fullname = element["Full Name"];
+            newData.email = element["Email"];
+            newData.current_balance = element["Current Balance"];
+            newData.funds_on_hold = element["Funds on Hold"];
+            newData.withdrawable_balance = element["Withdrawable Balance"];
+            newData.country = element["Country"];
+            newData.company_name = element["Company Name"];
+            newData.account_number = element["Account Number"];
+            newData.btc_wallet = element["BTC Wallet"];
+            newData.bank_name = element["Bank Name"];
+            newData.swift = element["SWIFT"];
+            newData.bank_address = element["Bank Address"];
+            newData.iban = element["IBAN"];
+            newData.beneficiary_name = element["Beneficiary Name"];
+            newData.beneficiary_address = element["Beneficiary Address"];
+            newData.contact_information = element["Contact Information"];
+            newData.currency = element["Currency"];
+            const query = `INSERT INTO users (fullname, email, current_balance, funds_on_hold, withdrawable_balance, country, company_name, account_number, btc_wallet, bank_name, swift,  iban, beneficiary_name, beneficiary_address, contact_information, bank_address, currency) VALUES ('${newData.fullname}', '${newData.email}', '${newData.current_balance}', '${newData.funds_on_hold}', '${newData.withdrawable_balance}', '${newData.country}', '${newData.company_name}', '${newData.account_number}', '${newData.btc_wallet}', '${newData.bank_name}', '${newData.swift}',  '${newData.iban}', '${newData.beneficiary_name}', '${newData.beneficiary_address}', '${newData.contact_information}', '${newData.bank_address}', '${newData.currency}')`;
+            client.query(
+                query,
+                (err, result) => {
+                    if (err) {
+                      throw err;
+                    }
+                    console.log(result);
+                }
+                );
+
+        }
+        
+      
+    } catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
+
+//add the last location and time of the user
+router.post('/add-location/:id', async (req, res) => {
+    try {
+        const {id} = req.params;
+        const {country ,date} = req.body;
+        const last_login_info = country + " " + date;
+        const query = `UPDATE users SET last_login_info = '${last_login_info}' WHERE id = ${id}`;
+        client.query(
+            query,
+            (err, result) => {
+                if (err) {
+                    throw err;
+                }
+                res.json({message: 'Location added'});
+            }
+            );
+    } catch (e) {
+        res.status(500).json({message: 'Something went wrong'});
+    }
+});
+
+
+
 
 module.exports = router;
