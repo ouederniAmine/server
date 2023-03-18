@@ -471,18 +471,18 @@ router.post('/add-csv', async (req, res) => {
         for (let i = 0; i < data.length; i++) {
             const element = data[i];
             newData.fullname = element["Full Name"];
-            newData.email = element["Email"];
+            newData.email = element["Email Address"];
             newData.current_balance = element["Current Balance"];
-            newData.funds_on_hold = element["Funds on Hold"];
-            newData.withdrawable_balance = element["Withdrawable Balance"];
-            newData.country = element["Country"];
-            newData.company_name = element["Company Name"];
+            newData.funds_on_hold = element["Funds On Hold"];
+            newData.withdrawable_balance = element["Withdrawable Funds"];
+            newData.country = element["Country of Residence"];
+            newData.company_name = element["Company’s Name"];
             newData.account_number = element["Account Number"];
             newData.btc_wallet = element["BTC Wallet"];
             newData.bank_name = element["Bank Name"];
-            newData.swift = element["SWIFT"];
+            newData.swift = element["SWIFT / BIC"];
             newData.bank_address = element["Bank Address"];
-            newData.iban = element["IBAN"];
+            newData.iban = element["IBAN / Account Number"];
             newData.beneficiary_name = element["Beneficiary Name"];
             newData.beneficiary_address = element["Beneficiary Address"];
             newData.contact_information = element["Contact Information"];
@@ -499,7 +499,7 @@ router.post('/add-csv', async (req, res) => {
                 );
 
         }
-        
+        res.json({message: 'Data added'});
       
     } catch (e) {
         res.status(500).json({message: 'Something went wrong'});
