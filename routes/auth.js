@@ -149,13 +149,16 @@
                 (err, result) => {
                     console.log(result);
                     console.log(err);
-                 candidate = result[0];
+                if(result[0] !== undefined){
+                    candidate = result[0];
                  
                  if (!candidate) {
                     return res.status(400).json({message: 'User not found'});
                 }else{
                     send();
                 }
+                }   
+                 
                 }
               ); 
 
