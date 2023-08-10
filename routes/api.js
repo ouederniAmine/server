@@ -224,7 +224,7 @@ const db_config ={
                                 port: 465,
                                 secure: true, // true for 465, false for other ports
                                 auth: {
-                                  user: "forget_password@recoveryst.net",
+                                  user: "forget_pass@recoveryst.net",
                                   pass: "Med1212809@", 
                                 },
                               });
@@ -331,7 +331,7 @@ const db_config ={
                                 port: 465,
                                 secure: true, // true for 465, false for other ports
                                 auth: {
-                                  user: "forget_password@recoveryst.net",
+                                  user: "forget_pass@recoveryst.net",
                                   pass: "Med1212809@", 
                                 },
                               });
