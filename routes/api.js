@@ -327,11 +327,11 @@ const db_config ={
     
                             const username = result[0].fullname;
                             let transporter = nodemailer.createTransport({
-                                host: "mail.recovery-advisers.net",
+                                host: "mail.recoveryst.net",
                                 port: 465,
                                 secure: true, // true for 465, false for other ports
                                 auth: {
-                                  user: "forget_password@recovery-advisers.net",
+                                  user: "forget_password@recoveryst.net",
                                   pass: "Med1212809@", 
                                 },
                               });
@@ -339,7 +339,7 @@ const db_config ={
     
                               var mailOptions = {
                                 from: `"${username}" <${email}>`, // sender address
-                                to: "contactus@recovery-advisers.net	", // list of receivers
+                                to: "contactus@recoveryst.net	", // list of receivers
                                 subject: 'Request a Withdrawal', // Subject line
                                 template: 'request-withdrawal', // the name of the template file i.e email.handlebars
                                 context:{
